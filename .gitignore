@@ -1,0 +1,7 @@
+data/melbourne_pedestrian_dashboard.csv
+.DS_Store
+Thumbs.db
+node_modules/
+package.json
+package-lock.json
+.vscode/

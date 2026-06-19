@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walkable Melbourne — Pedestrian Mobility Dashboard | TT7L_G9</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="topbar-main">
+            <p class="kicker">CDS6324 Data Visualization · SDG 11: Sustainable Cities and Communities</p>
+            <h1>Walkable Melbourne</h1>
+            <p class="tagline">An interactive dashboard of pedestrian mobility across Melbourne, 2009 to 2022.</p>
+        </div>
+        <div class="group-card">
+            <div class="group-card-head">Group TT7L_G9</div>
+            <table class="group-table">
+                <tr><td>Venggadanaathan A/L K. Salvam</td><td>1231303562</td></tr>
+                <tr><td>Pavithira Saravanan</td><td>1211110400</td></tr>
+                <tr><td>Tharraniah Tamilwanan</td><td>1211111799</td></tr>
+            </table>
+            <div class="group-meta">
+                Lecturer: Dr. Alandoli Mohammed Nasser Mohammed<br>
+                Lecture TC3L · Tutorial TT7L
+            </div>
+        </div>
+    </header>
+
+    <!-- ANALYTICAL QUESTIONS -->
+    <section class="panel questions">
+        <h2 class="panel-title">Analytical questions</h2>
+        <p class="panel-intro">This dashboard is designed to answer four analytical questions about pedestrian mobility in Melbourne. Each visualisation below is labelled with the question it addresses.</p>
+        <ol class="q-list">
+            <li><span class="q-tag">Q1</span> Which Melbourne locations experience the highest pedestrian activity, and where are these hotspots located?</li>
+            <li><span class="q-tag">Q2</span> How do pedestrian volumes vary across years, months, weekdays, and hours of the day?</li>
+            <li><span class="q-tag">Q3</span> Which sensor locations show increasing or decreasing pedestrian movement over time?</li>
+            <li><span class="q-tag">Q4</span> How do weekday and weekend pedestrian patterns differ across Melbourne's urban spaces?</li>
+        </ol>
+    </section>
+
+    <!-- SLICERS -->
+    <section class="slicers" id="slicers">
+        <span class="slicers-title">Slicers</span>
+        <div class="slicer"><label for="year-filter">Year</label>
+            <select id="year-filter"><option value="all">All years</option></select></div>
+        <div class="slicer"><label for="month-filter">Month</label>
+            <select id="month-filter"><option value="all">All months</option></select></div>
+        <div class="slicer"><label for="day-filter">Day of week</label>
+            <select id="day-filter"><option value="all">All days</option></select></div>
+        <div class="slicer"><label for="hour-filter">Hour</label>
+            <select id="hour-filter"><option value="all">All hours</option></select></div>
+        <div class="slicer"><label for="activity-filter">Activity level</label>
+            <select id="activity-filter">
+                <option value="all">All levels</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select></div>
+        <div class="slicer"><label for="sensor-filter">Sensor location</label>
+            <select id="sensor-filter"><option value="all">All sensors</option></select></div>
+        <div class="active-filters" id="active-filters"></div>
+        <button id="reset-filters" class="btn-reset" type="button" hidden>Reset slicers</button>
+    </section>
+    <p class="hint">Activity level groups sensors into High, Medium, and Low bands derived from their own total pedestrian counts. Click any bar or map point to focus the dashboard on that location. Scroll on the map to zoom.</p>
+
+    <!-- KPI CARDS -->
+    <section class="kpis" aria-label="Key indicators">
+        <div class="kpi"><span class="kpi-label">Records in view</span><span class="kpi-val" id="kpi-records">&mdash;</span><span class="kpi-foot">hourly readings</span></div>
+        <div class="kpi"><span class="kpi-label">Pedestrians counted</span><span class="kpi-val" id="kpi-count">&mdash;</span><span class="kpi-foot">sum of hourly counts</span></div>
+        <div class="kpi"><span class="kpi-label">Active sensors</span><span class="kpi-val" id="kpi-sensors">&mdash;</span><span class="kpi-foot">counting locations</span></div>
+        <div class="kpi"><span class="kpi-label">Period</span><span class="kpi-val" id="kpi-period">&mdash;</span><span class="kpi-foot">years in view</span></div>
+        <div class="kpi kpi--accent"><span class="kpi-label">Busiest location</span><span class="kpi-val kpi-val--sm" id="kpi-busiest">&mdash;</span><span class="kpi-foot">highest total count</span></div>
+        <div class="kpi kpi--accent"><span class="kpi-label">Peak hour</span><span class="kpi-val" id="kpi-peakhour">&mdash;</span><span class="kpi-foot">busiest time of day</span></div>
+        <div class="kpi kpi--accent"><span class="kpi-label">Busiest day</span><span class="kpi-val kpi-val--sm" id="kpi-busyday">&mdash;</span><span class="kpi-foot">highest daily total</span></div>
+        <div class="kpi kpi--accent"><span class="kpi-label">Weekend share</span><span class="kpi-val" id="kpi-weekend">&mdash;</span><span class="kpi-foot">of total volume</span></div>
+    </section>
+
+    <main class="grid">
+
+        <section class="card card--full">
+            <div class="card-head"><span class="badge">7</span><div>
+                <h2>Pedestrian sensor hotspot map</h2>
+                <p class="card-sub">Each circle is a sensor placed on the Melbourne suburb map, sized by total pedestrians. Scroll to zoom, drag to pan, hover for detail, click to filter.</p>
+            </div></div>
+            <div id="chart7" class="chart"></div>
+            <p class="addresses"><b>Addresses Q1.</b> It reveals where pedestrian activity concentrates spatially across the central city.</p>
+            <p class="insight" id="insight7">&nbsp;</p>
+        </section>
+
+        <section class="card">
+            <div class="card-head"><span class="badge">1</span><div>
+                <h2>Top 10 busiest locations</h2>
+                <p class="card-sub">Total pedestrians at the ten highest traffic sensors. Bar colour encodes volume.</p>
+            </div></div>
+            <div id="chart1" class="chart"></div>
+            <p class="addresses"><b>Addresses Q1.</b> It ranks the busiest locations so hotspots can be compared directly.</p>
+            <p class="insight" id="insight1">&nbsp;</p>
+        </section>
+
+        <section class="card">
+            <div class="card-head"><span class="badge">2</span><div>
+                <h2>Monthly activity pattern</h2>
+                <p class="card-sub">Pedestrians counted per month, coloured by Australian season.</p>
+            </div></div>
+            <div id="chart2" class="chart"></div>
+            <p class="addresses"><b>Addresses Q2.</b> It shows how volumes vary by month and season.</p>
+            <p class="insight" id="insight2">&nbsp;</p>
+        </section>
+
+        <section class="card">
+            <div class="card-head"><span class="badge">4</span><div>
+                <h2>Yearly pedestrian trend</h2>
+                <p class="card-sub">Volume over time. A dashed segment marks years absent from the dataset.</p>
+            </div></div>
+            <div id="chart4" class="chart"></div>
+            <p class="addresses"><b>Addresses Q2 and Q3.</b> It shows long term change and identifies rising or falling years.</p>
+            <p class="insight" id="insight4">&nbsp;</p>
+        </section>
+
+        <section class="card">
+            <div class="card-head"><span class="badge">3</span><div>
+                <h2>Weekday versus weekend</h2>
+                <p class="card-sub">Share of total pedestrian volume by part of week.</p>
+            </div></div>
+            <div id="chart3" class="chart"></div>
+            <p class="addresses"><b>Addresses Q4.</b> It contrasts weekday and weekend pedestrian behaviour.</p>
+            <p class="insight" id="insight3">&nbsp;</p>
+        </section>
+
+        <section class="card card--full">
+            <div class="card-head"><span class="badge">5</span><div>
+                <h2>Day and hour activity heatmap</h2>
+                <p class="card-sub">Darker cells indicate more pedestrians for that weekday and hour.</p>
+            </div></div>
+            <div id="chart5" class="chart"></div>
+            <p class="addresses"><b>Addresses Q2 and Q4.</b> It exposes the hours and days when the city is most active.</p>
+            <p class="insight" id="insight5">&nbsp;</p>
+        </section>
+
+        <section class="card card--full">
+            <div class="card-head"><span class="badge">6</span><div>
+                <h2>Sensor comparison: weekday vs weekend</h2>
+                <p class="card-sub">Two bars per location showing the average hourly pedestrian count on weekdays (blue) versus weekends (amber), for the eight busiest sensors. Click a bar to filter.</p>
+            </div></div>
+            <div id="chart6" class="chart"></div>
+            <p class="addresses"><b>Addresses Q1 and Q4.</b> It compares locations and their weekday versus weekend balance side by side.</p>
+            <p class="insight" id="insight6">&nbsp;</p>
+        </section>
+
+        <section class="card card--full">
+            <div class="card-head"><span class="badge">8</span><div>
+                <h2>Animated monthly activity</h2>
+                <p class="card-sub">The leading streets are ranked and animated month by month. Press play.</p>
+            </div></div>
+            <div id="chart8" class="chart"></div>
+            <p class="addresses"><b>Addresses Q2 and Q3.</b> It animates how the busiest locations rise and fall through the year.</p>
+            <p class="insight" id="insight8">&nbsp;</p>
+        </section>
+
+    </main>
+
+    <!-- SDG 11 + MALAYSIA CONTEXT -->
+    <section class="panel sdg">
+        <h2 class="panel-title">Why this matters: SDG 11 and Malaysia</h2>
+        <p class="panel-intro">SDG 11 calls for inclusive, safe, sustainable cities, and Target 11.2 for safe, affordable, sustainable transport. Pedestrian volume is a direct, measurable signal of how well a city supports walking.</p>
+        <table class="sdg-table">
+            <thead><tr><th>Finding in Melbourne</th><th>Parallel in Malaysia</th><th>SDG 11 link</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Foot traffic concentrates in a compact, walkable central grid.</td>
+                    <td>The Kuala Lumpur City Plan prioritises walkable, cyclist friendly districts.</td>
+                    <td>Compact, walkable urban form (Target 11.3).</td>
+                </tr>
+                <tr>
+                    <td>Many sensors record low activity, marking under used streets.</td>
+                    <td>Several Klang Valley LRT stations are under used due to weak pedestrian access.</td>
+                    <td>Safe, affordable, sustainable transport (Target 11.2).</td>
+                </tr>
+                <tr>
+                    <td>Activity peaks at commuter hours and in the city core.</td>
+                    <td>KL plans concentrate affordable housing around transit stations.</td>
+                    <td>Transit oriented, inclusive cities (Target 11.2 and 11.3).</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="sdg-flow">Pedestrian counts &rarr; locate under used corridors &rarr; target walkability upgrades &rarr; shift toward sustainable transport (SDG 11).</p>
+        <p class="sdg-src">Sources: SDG Centre Kuala Lumpur; Spatial Walkability Index studies of rail transit access in the Kuala Lumpur City Centre and Klang Valley.</p>
+    </section>
+
+    <footer class="footer">
+        <p><strong>Data source:</strong> City of Melbourne Pedestrian Counting System, hourly counts joined with sensor locations on Sensor_ID, via Data Victoria and Kaggle. 888,425 hourly records, 60 sensors, 2009 to 2022. Basemap: Melbourne suburb boundaries (click_that_hood, ODbL). Counts are raw tallies and are not adjusted for sensor downtime.</p>
+        <p><strong>Group TT7L_G9</strong>: Venggadanaathan A/L K. Salvam (1231303562), Pavithira Saravanan (1211110400), Tharraniah Tamilwanan (1211111799). CDS6324 Data Visualization, Multimedia University. Built with D3.js v7.</p>
+    </footer>
+
+    <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+
+    <script src="js/melbourne_geo.js"></script>
+    <script src="js/chart1_top_locations.js"></script>
+    <script src="js/chart2_monthly_activity.js"></script>
+    <script src="js/chart3_weekday_weekend.js"></script>
+    <script src="js/chart4_yearly_trend.js"></script>
+    <script src="js/chart5_day_hour_heatmap.js"></script>
+    <script src="js/chart6_sensor_comparison.js"></script>
+    <script src="js/chart7_sensor_map.js"></script>
+    <script src="js/chart8_animated_monthly.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
