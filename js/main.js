@@ -24,8 +24,17 @@ var fmtSI  = d3.format(".2s");
 function fmtCount(n){return fmtInt(Math.round(n));}
 function pct(n){return d3.format(".0%")(n);}
 
+/* ---------- Data source ----------
+   On GitHub Pages the local data/ folder cannot hold the 127 MB CSV, so the
+   hosted copy is fetched instead. Anywhere else (Live Server, the grader's
+   machine, the eBwise zip) it loads from the local data/ folder unchanged. */
+var HOSTED_CSV_URL = "https://cdn.jsdelivr.net/gh/Vengga/walkable-melbourne-dashboard@v1.0/melbourne_pedestrian_dashboard.csv";
+var LOCAL_CSV_URL  = "data/melbourne_pedestrian_dashboard.csv";
+var DATA_URL = (location.hostname.indexOf("github.io") !== -1) ? HOSTED_CSV_URL : LOCAL_CSV_URL;
+
 /* ---------- Load data ---------- */
-d3.csv("data/melbourne_pedestrian_dashboard.csv").then(function(data){
+d3.selectAll(".chart").html('<p class="empty">Loading data, please wait...</p>');
+d3.csv(DATA_URL).then(function(data){
     data.forEach(function(d){
         d.Year=+d.Year; d.Mdate=+d.Mdate; d.Time=+d.Time; d.Sensor_ID=+d.Sensor_ID;
         d.Hourly_Counts=+d.Hourly_Counts; d.latitude=+d.latitude; d.longitude=+d.longitude;
@@ -39,7 +48,7 @@ d3.csv("data/melbourne_pedestrian_dashboard.csv").then(function(data){
     updateDashboard();
 }).catch(function(err){
     console.error("Load error:",err);
-    d3.selectAll(".chart").html('<p class="empty">Could not load the dataset. Serve the folder with Live Server, not file://.</p>');
+    d3.selectAll(".chart").html('<p class="empty">Could not load the dataset. If running locally, serve the folder with Live Server (not file://). If viewing the hosted site, the data host may be unavailable, please try again shortly.</p>');
 });
 
 /* ---------- Activity bands: derived from each sensor's own total counts ---------- */
