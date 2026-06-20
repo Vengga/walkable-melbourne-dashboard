@@ -28,7 +28,7 @@ function pct(n){return d3.format(".0%")(n);}
    On GitHub Pages the local data/ folder cannot hold the 127 MB CSV, so the
    hosted copy is fetched instead. Anywhere else (Live Server, the grader's
    machine, the eBwise zip) it loads from the local data/ folder unchanged. */
-var HOSTED_CSV_URL = "https://cdn.jsdelivr.net/gh/Vengga/walkable-melbourne-dashboard@v1.0/melbourne_pedestrian_dashboard.csv";
+var HOSTED_CSV_URL = "https://github.com/Vengga/walkable-melbourne-dashboard/releases/download/v1.0/melbourne_pedestrian_dashboard.csv";
 var LOCAL_CSV_URL  = "data/melbourne_pedestrian_dashboard.csv";
 var DATA_URL = (location.hostname.indexOf("github.io") !== -1) ? HOSTED_CSV_URL : LOCAL_CSV_URL;
 
